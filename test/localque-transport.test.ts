@@ -4,8 +4,8 @@ import Seneca from 'seneca'
 import SenecaMsgTest from 'seneca-msg-test'
 // import { Maintain } from '@seneca/maintain'
 
-import ReferDoc from '../src/refer-doc'
-import Refer from '../src/refer'
+import Localque-TransportDoc from '../src/localque-transport-doc'
+import Localque-Transport from '../src/localque-transport'
 
 import BasicMessages from './basic.messages'
 import ManyMessages from './many.messages'
@@ -13,14 +13,14 @@ import ConflictMessages from './conflict.messages'
 import InviteMessages from './invite.messages'
 
 
-describe('refer', () => {
+describe('localque-transport', () => {
   test('happy', async () => {
-    expect(ReferDoc).toBeDefined()
+    expect(Localque - TransportDoc).toBeDefined()
     const seneca = Seneca({ legacy: false })
       .test()
       .use('promisify')
       .use('entity')
-      .use(Refer)
+      .use(Localque - Transport)
     await seneca.ready()
   })
 
@@ -30,11 +30,11 @@ describe('refer', () => {
       .test()
       .use('promisify')
       .use('entity')
-      .use(Refer)
+      .use(Localque - Transport)
     await seneca.ready()
 
-    let genToken = seneca.export('refer/genToken')
-    let genCode = seneca.export('refer/genCode')
+    let genToken = seneca.export('localque-transport/genToken')
+    let genCode = seneca.export('localque-transport/genCode')
 
     expect(genToken().length).toEqual(16)
     expect(genCode().length).toEqual(6)
@@ -78,7 +78,7 @@ async function makeSeneca() {
 
   await makeBasicRules(seneca)
 
-  seneca.use(Refer)
+  seneca.use(Localque - Transport)
 
   await makeMockActions(seneca)
 
@@ -91,8 +91,8 @@ async function makeSeneca() {
 }
 
 async function makeBasicRules(seneca: any) {
-  await seneca.entity('refer/rule').save$({
-    ent: 'refer/occur',
+  await seneca.entity('localque-transport/rule').save$({
+    ent: 'localque-transport/occur',
     cmd: 'save',
     where: { kind: 'create' },
     call: [
@@ -103,13 +103,13 @@ async function makeBasicRules(seneca: any) {
         subject: '`config:sender.invite.subject`',
         toaddr: '`occur:sender.invite.subject`',
         code: 'invite',
-        kind: 'refer',
+        kind: 'localque-transport',
       },
     ],
   })
 
-  await seneca.entity('refer/rule').save$({
-    ent: 'refer/occur',
+  await seneca.entity('localque-transport/rule').save$({
+    ent: 'localque-transport/occur',
     cmd: 'save',
     where: { kind: 'accept' },
     call: [
@@ -118,19 +118,19 @@ async function makeBasicRules(seneca: any) {
         award: 'incr',
         field: 'count',
         give: 'award',
-        biz: 'refer',
+        biz: 'localque-transport',
       },
     ],
   })
 
-  await seneca.entity('refer/rule').save$({
-    ent: 'refer/occur',
+  await seneca.entity('localque-transport/rule').save$({
+    ent: 'localque-transport/occur',
     cmd: 'save',
     where: { kind: 'lost' },
     call: [
       {
         lost: 'entry',
-        biz: 'refer',
+        biz: 'localque-transport',
       },
     ],
   })

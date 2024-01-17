@@ -1,10 +1,10 @@
 # Notes
 
-## Referral Programme Articles
+## Localque-Transportral Programme Articles
 
-- https://growsurf.com/blog/b2c-subscription-referral-marketing
-- https://blog.hubspot.com/service/customer-referral-program
-- https://userguiding.com/blog/saas-referral-programs/
+- https://growsurf.com/blog/b2c-subscription-localque-transportral-marketing
+- https://blog.hubspot.com/service/customer-localque-transportral-program
+- https://userguiding.com/blog/saas-localque-transportral-programs/
 
 # Vanity URL example
 
@@ -23,38 +23,38 @@ Assumes fields:
 
 - id
 
-### refer/entry
+### localque-transport/entry
 
 The main table.
-A referral from a user to an invitee.
+A localque-transportral from a user to an invitee.
 
-Does _not_ store state. To allow for more flexible business rules, referral "state" is
-determined by child rows in refer/occur
+Does _not_ store state. To allow for more flexible business rules, localque-transportral "state" is
+determined by child rows in localque-transport/occur
 
-Parent: refer/point
-Child: refer/occur
+Parent: localque-transport/point
+Child: localque-transport/occur
 
-### refer/occur
+### localque-transport/occur
 
-An event in the referal process. Used instead of a single "state" on refer/entry
+An event in the localque-transportal process. Used instead of a single "state" on localque-transport/entry
 Not called "event" to avoid conflicts.
 
 Triggers various external actions - sending email, rewards etc.
 
-Parent: refer/entry
+Parent: localque-transport/entry
 
-### refer/rule
+### localque-transport/rule
 
-Defined action triggers for rows in refer/occur
+Defined action triggers for rows in localque-transport/occur
 Actual actions are app specific - encoded by messages
 
-### refer/reward
+### localque-transport/reward
 
-Track user "rewards" wrt referrals, such as # of referrals, kind of "points"
+Track user "rewards" wrt localque-transportrals, such as # of localque-transportrals, kind of "points"
 
-### refer/point
+### localque-transport/point
 
-Referral entry point; link or code; many inbound users
+Localque-Transportral entry point; link or code; many inbound users
 Vanity urls, etc.
 
-Child: refer/entry
+Child: localque-transport/entry
