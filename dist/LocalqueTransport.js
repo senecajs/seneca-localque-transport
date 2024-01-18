@@ -22,17 +22,16 @@ function LocalqueTransport(options) {
         const pg = seneca.util.pincanon(config.pin || config.pins);
         function handle_msg(data, done) {
             const msgdata = JSON.parse(data);
-            const listenMeta = msgdata.meta$;
+            const meta = msgdata.meta$;
             const msg = tu.internalize_msg(seneca, msgdata);
-            log && log.push({ hook: 'listen', entry: 'handle', msg });
+            log && log.push({
+                hook: 'listen', entry: 'handle', pat: meta === null || meta === void 0 ? void 0 : meta.pattern, w: Date.now(), m: meta === null || meta === void 0 ? void 0 : meta.id
+            });
             // Convert que msg into a new local msg - avoid que loop
             let localmsg = seneca.util.clean(msg);
             localmsg.local$ = true;
-            seneca.act(localmsg, function (err, out, _meta) {
-                // use the listen meta so that seneca.reply will the correct msg id
-                const reply = JSON.stringify(tu.externalize_reply(seneca, err, out, listenMeta));
-                log && log.push({ hook: 'listen', entry: 'que', reply });
-                queMap[pg + '~OUT'].push(reply);
+            seneca.act(localmsg, function (_err, _out, _meta) {
+                // Reply not returned as que messages are asynchronous.
             });
             return done();
         }
@@ -42,18 +41,25 @@ function LocalqueTransport(options) {
     function hook_client_localque(config, ready) {
         const seneca = this.root.delegate();
         const pg = seneca.util.pincanon(config.pin || config.pins);
-        function send_msg(msg, _reply_not_used_here, meta) {
-            queMap[pg + '~OUT'] = async_1.default.queue(handle_reply);
+        function send_msg(msg, reply, meta) {
+            //  queMap[pg + '~OUT'] = Async.queue(handle_reply)
             const msgstr = JSON.stringify(tu.externalize_msg(seneca, msg, meta));
-            log && log.push({ hook: 'client', entry: 'send', msg: msgstr });
+            log && log.push({
+                hook: 'client', entry: 'send', pat: meta.pattern, w: Date.now(), m: meta.id
+            });
             queMap[pg + '~IN'].push(msgstr);
+            // No reply as que messages as asynchronous
+            reply();
         }
-        function handle_reply(data, done) {
-            const reply = tu.internalize_reply(seneca, JSON.parse(data));
-            log && log.push({ hook: 'client', entry: 'reply', reply });
-            seneca.reply(reply);
-            return done();
+        /*
+        function handle_reply(data: any, done: Function) {
+          const reply = tu.internalize_reply(seneca, JSON.parse(data))
+          log && log.push({ hook: 'client', entry: 'reply', reply })
+    
+          seneca.reply(reply)
+          return done()
         }
+        */
         return ready({
             config: config,
             send: send_msg

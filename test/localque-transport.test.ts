@@ -1,150 +1,106 @@
-/* Copyright © 2022 Seneca Project Contributors, MIT License. */
+/* Copyright © 2022-2024 Seneca Project Contributors, MIT License. */
 
 import Seneca from 'seneca'
-import SenecaMsgTest from 'seneca-msg-test'
+// import SenecaMsgTest from 'seneca-msg-test'
 // import { Maintain } from '@seneca/maintain'
 
-import Localque-TransportDoc from '../src/localque-transport-doc'
-import Localque-Transport from '../src/localque-transport'
+import LocalqueTransportDoc from '../src/LocalqueTransportDoc'
+import LocalqueTransport from '../src/LocalqueTransport'
 
-import BasicMessages from './basic.messages'
-import ManyMessages from './many.messages'
-import ConflictMessages from './conflict.messages'
-import InviteMessages from './invite.messages'
 
 
 describe('localque-transport', () => {
   test('happy', async () => {
-    expect(Localque - TransportDoc).toBeDefined()
+    expect(LocalqueTransportDoc).toBeDefined()
     const seneca = Seneca({ legacy: false })
       .test()
       .use('promisify')
       .use('entity')
-      .use(Localque - Transport)
+      .use(LocalqueTransport)
     await seneca.ready()
   })
 
 
-  test('gen', async () => {
-    const seneca = Seneca({ legacy: false })
+  test('basic', async () => {
+    const log = []
+
+    const seneca = await Seneca({ legacy: false })
+      .test()
+      .use('promisify')
+      .use(LocalqueTransport)
+      .message('a:1', async function a1(this: any, msg: any) {
+        log.push('a1x=' + msg.x)
+        this.post({ b: 1, x: 0.5 + msg.x })
+      })
+      .message('b:1', async function b1(this: any, msg: any) {
+        log.push('b1x=' + msg.x)
+      })
+
+      .listen({ type: 'localque', pin: 'a:1' })
+      .client({ type: 'localque', pin: 'a:1' })
+
+      .listen({ type: 'localque', pin: 'b:1' })
+      .client({ type: 'localque', pin: 'b:1' })
+
+      .ready()
+
+    let o1 = await seneca.post('a:1,x:1')
+    expect(null).toEqual(o1)
+
+    let o2 = await seneca.post('a:1,x:2')
+    expect(null).toEqual(o2)
+
+    await seneca.ready()
+
+    // console.log(log)
+    expect(log).toMatchObject([
+      "a1x=1",
+      "a1x=2",
+      "b1x=1.5",
+      "b1x=2.5",
+    ])
+  })
+
+
+  test('entity', async () => {
+    const log = []
+
+    const seneca = await Seneca({ legacy: false })
       .test()
       .use('promisify')
       .use('entity')
-      .use(Localque - Transport)
+      .use(LocalqueTransport)
+      .message('a:1', async function a1(this: any, msg: any) {
+        log.push('a1x=' + msg.x + ';f=' + msg.f.data$().y)
+        this.post({ b: 1, x: 0.5 + msg.x, f: msg.f })
+      })
+      .message('b:1', async function b1(this: any, msg: any) {
+        log.push('b1x=' + msg.x + ';f=' + msg.f.data$().y)
+      })
+
+      .listen({ type: 'localque', pin: 'a:1' })
+      .client({ type: 'localque', pin: 'a:1' })
+
+      .listen({ type: 'localque', pin: 'b:1' })
+      .client({ type: 'localque', pin: 'b:1' })
+
+      .ready()
+
+    let o1 = await seneca.post('a:1,x:1', { f: seneca.entity('foo', { y: 11 }) })
+    expect(null).toEqual(o1)
+
+    let o2 = await seneca.post('a:1,x:2', { f: seneca.entity('foo', { y: 22 }) })
+    expect(null).toEqual(o2)
+
     await seneca.ready()
 
-    let genToken = seneca.export('localque-transport/genToken')
-    let genCode = seneca.export('localque-transport/genCode')
-
-    expect(genToken().length).toEqual(16)
-    expect(genCode().length).toEqual(6)
+    // console.log(log)
+    expect(log).toMatchObject([
+      "a1x=1;f=11",
+      "a1x=2;f=22",
+      "b1x=1.5;f=11",
+      "b1x=2.5;f=22",
+    ])
   })
 
-
-  test('basic.messages', async () => {
-    const seneca = await makeSeneca()
-    await SenecaMsgTest(seneca, BasicMessages)()
-  })
-
-
-  test('many.messages', async () => {
-    const seneca = await makeSeneca()
-    await SenecaMsgTest(seneca, ManyMessages)()
-  })
-
-
-  test('conflict.messages', async () => {
-    const seneca = await makeSeneca()
-    await SenecaMsgTest(seneca, ConflictMessages)()
-  })
-
-
-  test('invite.messages', async () => {
-    const seneca = await makeSeneca()
-    await SenecaMsgTest(seneca, InviteMessages)()
-  })
-
-
-  // test('maintain', Maintain)
 })
-
-
-async function makeSeneca() {
-  const seneca = Seneca({ legacy: false })
-    .test()
-    .use('promisify')
-    .use('entity')
-    .use('entity-util', { when: { active: true } })
-
-  await makeBasicRules(seneca)
-
-  seneca.use(Localque - Transport)
-
-  await makeMockActions(seneca)
-
-  await seneca.ready()
-
-  // print all message patterns
-  // console.log(seneca.list())
-
-  return seneca
-}
-
-async function makeBasicRules(seneca: any) {
-  await seneca.entity('localque-transport/rule').save$({
-    ent: 'localque-transport/occur',
-    cmd: 'save',
-    where: { kind: 'create' },
-    call: [
-      {
-        sys: 'email',
-        send: 'email',
-        fromaddr: '`config:sender.invite.email`',
-        subject: '`config:sender.invite.subject`',
-        toaddr: '`occur:sender.invite.subject`',
-        code: 'invite',
-        kind: 'localque-transport',
-      },
-    ],
-  })
-
-  await seneca.entity('localque-transport/rule').save$({
-    ent: 'localque-transport/occur',
-    cmd: 'save',
-    where: { kind: 'accept' },
-    call: [
-      {
-        kind: 'accept',
-        award: 'incr',
-        field: 'count',
-        give: 'award',
-        biz: 'localque-transport',
-      },
-    ],
-  })
-
-  await seneca.entity('localque-transport/rule').save$({
-    ent: 'localque-transport/occur',
-    cmd: 'save',
-    where: { kind: 'lost' },
-    call: [
-      {
-        lost: 'entry',
-        biz: 'localque-transport',
-      },
-    ],
-  })
-}
-
-async function makeMockActions(seneca: any) {
-  seneca.message('sys:email,send:email', async function(this: any, msg: any) {
-    this.entity('mock/email').save$({
-      toaddr: msg.toaddr,
-      fromaddr: msg.fromaddr,
-      subject: msg.subject,
-      kind: msg.kind,
-      code: msg.code,
-      what: 'sent',
-    })
-  })
-}

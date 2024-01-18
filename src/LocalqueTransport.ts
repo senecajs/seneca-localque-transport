@@ -37,20 +37,18 @@ function LocalqueTransport(this: any, options: Options) {
 
     function handle_msg(data: string, done: Function) {
       const msgdata = JSON.parse(data)
-      const listenMeta = msgdata.meta$
+      const meta = msgdata.meta$
       const msg = tu.internalize_msg(seneca, msgdata)
-      log && log.push({ hook: 'listen', entry: 'handle', msg })
+      log && log.push({
+        hook: 'listen', entry: 'handle', pat: meta?.pattern, w: Date.now(), m: meta?.id
+      })
 
       // Convert que msg into a new local msg - avoid que loop
       let localmsg = seneca.util.clean(msg)
       localmsg.local$ = true
 
-      seneca.act(localmsg, function(err: Error | null | undefined, out: any, _meta: any) {
-        // use the listen meta so that seneca.reply will the correct msg id
-        const reply = JSON.stringify(tu.externalize_reply(seneca, err, out, listenMeta))
-
-        log && log.push({ hook: 'listen', entry: 'que', reply })
-        queMap[pg + '~OUT'].push(reply)
+      seneca.act(localmsg, function(_err: Error | null | undefined, _out: any, _meta: any) {
+        // Reply not returned as que messages are asynchronous.
       })
 
       return done()
@@ -66,15 +64,21 @@ function LocalqueTransport(this: any, options: Options) {
 
     const pg = seneca.util.pincanon(config.pin || config.pins)
 
-    function send_msg(msg: any, _reply_not_used_here: any, meta: any) {
-      queMap[pg + '~OUT'] = Async.queue(handle_reply)
+    function send_msg(msg: any, reply: any, meta: any) {
+      //  queMap[pg + '~OUT'] = Async.queue(handle_reply)
 
       const msgstr = JSON.stringify(tu.externalize_msg(seneca, msg, meta))
-      log && log.push({ hook: 'client', entry: 'send', msg: msgstr })
+      log && log.push({
+        hook: 'client', entry: 'send', pat: meta.pattern, w: Date.now(), m: meta.id
+      })
 
       queMap[pg + '~IN'].push(msgstr)
+
+      // No reply as que messages as asynchronous
+      reply()
     }
 
+    /*
     function handle_reply(data: any, done: Function) {
       const reply = tu.internalize_reply(seneca, JSON.parse(data))
       log && log.push({ hook: 'client', entry: 'reply', reply })
@@ -82,6 +86,7 @@ function LocalqueTransport(this: any, options: Options) {
       seneca.reply(reply)
       return done()
     }
+    */
 
     return ready({
       config: config,

@@ -12,11 +12,17 @@ async function run() {
         .use('..', {debug:true,log})
         .message('a:1', async function a1(msg) {
           log.push('a1x='+msg.x)
-          return {x:0.5+msg.x,a:1}
+          this.post({b:1,x:0.5+msg.x})
+        })
+        .message('b:1', async function b1(msg) {
+          log.push('b1x='+msg.x)
         })
 
         .listen({type:'localque',pin:'a:1'})
         .client({type:'localque',pin:'a:1'})
+
+        .listen({type:'localque',pin:'b:1'})
+        .client({type:'localque',pin:'b:1'})
 
         .ready()
 
@@ -26,9 +32,11 @@ async function run() {
   // console.log('b1',b1)
   
   let o1 = await seneca.post('a:1,x:1')
-  let o2 = await seneca.post('a:1,x:2')
+  // let o2 = await seneca.post('a:1,x:2')
 
-  // console.log(log)
-  console.log(o1)
-  console.log(o2)
+  await seneca.ready()
+  
+  console.log(log)
+  // console.log(o1)
+  // console.log(o2)
 }
