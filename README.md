@@ -32,9 +32,13 @@ TODO
 
 <!--START:options-->
 
+
 ## Options
 
-_None._
+* `debug` : boolean
+* `log` : array
+* `init$` : boolean
+
 
 <!--END:options-->
 
@@ -43,15 +47,8 @@ _None._
 
 ## Action Patterns
 
-* [accept:entry,biz:localque-transport](#-acceptentrybizlocalque-transport-)
-* [biz:localque-transport,create:entry](#-bizlocalque-transportcreateentry-)
-* [biz:localque-transport,ensure:entry](#-bizlocalque-transportensureentry-)
-* [biz:localque-transport,give:award](#-bizlocalque-transportgiveaward-)
-* [biz:localque-transport,load:entry](#-bizlocalque-transportloadentry-)
-* [biz:localque-transport,load:rules](#-bizlocalque-transportloadrules-)
-* [biz:localque-transport,lost:entry](#-bizlocalque-transportlostentry-)
-* [biz:localque-transport,update:occur](#-bizlocalque-transportupdateoccur-)
-* [biz:localque-transport,update:entry](#-bizlocalque-transportupdateentry-)
+* ["role":"transport","hook":"client","type":"localque"](#-roletransporthookclienttypelocalque-)
+* ["role":"transport","hook":"listen","type":"localque"](#-roletransporthooklistentypelocalque-)
 
 
 <!--END:action-list-->
@@ -61,63 +58,14 @@ _None._
 
 ## Action Descriptions
 
-### &laquo; `accept:entry,biz:localque-transport` &raquo;
+### &laquo; `"role":"transport","hook":"client","type":"localque"` &raquo;
 
 No description provided.
 
 
 
 ----------
-### &laquo; `biz:localque-transport,create:entry` &raquo;
-
-Create localque-transportral entry.
-
-
-
-----------
-### &laquo; `biz:localque-transport,ensure:entry` &raquo;
-
-No description provided.
-
-
-
-----------
-### &laquo; `biz:localque-transport,give:award` &raquo;
-
-No description provided.
-
-
-
-----------
-### &laquo; `biz:localque-transport,load:entry` &raquo;
-
-No description provided.
-
-
-
-----------
-### &laquo; `biz:localque-transport,load:rules` &raquo;
-
-No description provided.
-
-
-
-----------
-### &laquo; `biz:localque-transport,lost:entry` &raquo;
-
-No description provided.
-
-
-
-----------
-### &laquo; `biz:localque-transport,update:occur` &raquo;
-
-No description provided.
-
-
-
-----------
-### &laquo; `biz:localque-transport,update:entry` &raquo;
+### &laquo; `"role":"transport","hook":"listen","type":"localque"` &raquo;
 
 No description provided.
 
