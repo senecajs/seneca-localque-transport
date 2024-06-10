@@ -1,2 +1,4 @@
-declare const docs: {};
+declare const docs: {
+    messages: {};
+};
 export default docs;
