@@ -8,7 +8,6 @@ async function run() {
   
   const seneca = await Seneca({legacy:false,timeout:1111})
         .test('print')
-        .use('promisify')
         .use('..', {debug:true,log})
         .message('a:1', async function a1(msg) {
           log.push('a1x='+msg.x)

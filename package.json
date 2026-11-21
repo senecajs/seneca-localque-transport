@@ -1,6 +1,6 @@
 {
   "name": "@seneca/localque-transport",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "dist/LocalqueTransport.js",
   "type": "commonjs",
   "types": "dist/LocalqueTransport.d.ts",
@@ -15,7 +15,7 @@
   "author": "Richard Rodger - richardrodger.com",
   "repository": {
     "type": "git",
-    "url": "git://github.com/senecajs/seneca-localque-transport.git"
+    "url": "git+https://github.com/senecajs/seneca-localque-transport.git"
   },
   "scripts": {
     "prettier": "prettier --write .",
@@ -26,36 +26,44 @@
     "build": "tsc -d",
     "doc": "seneca-doc",
     "clean": "rm -rf node_modules yarn.lock package-lock.json dist",
-    "reset": "npm run clean && npm i && npm run build && npm test && npm run doc",
-    "repo-tag": "REPO_VERSION=`node -e \"console.log(require('./package').version)\"` && echo TAG: v$REPO_VERSION && git commit -a -m v$REPO_VERSION && git push && git tag v$REPO_VERSION && git push --tags;",
-    "repo-publish": "npm run clean && npm i && npm run repo-publish-quick",
-    "repo-publish-quick": "npm run build && npm run test && npm run doc && npm run repo-tag && npm publish --access public --registry https://registry.npmjs.org "
+    "reset": "npm run clean && npm i && npm run build && npm test && npm run doc"
   },
   "license": "MIT",
   "files": [
     "dist",
     "src/**/*.ts",
+    "README.md",
+    "CHANGES.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
-    "node": ">=14"
+    "node": ">=24"
   },
   "devDependencies": {
-    "@seneca/doc": "^8.0.0",
-    "@seneca/maintain": "^0.1.0",
+    "@seneca/doc": "^9.0.0",
+    "@seneca/entity": "^29.0.0",
+    "@seneca/transport": "^9.0.0",
     "@types/async": "^3.2.24",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.2",
+    "@types/node": "^24.0.0",
     "esbuild": "^0.21.5",
     "esbuild-jest": "^0.5.0",
     "jest": "^29.7.0",
     "prettier": "3.3.1",
+    "seneca": "^4.0.0",
     "typescript": "^5.4.5"
   },
   "peerDependencies": {
-    "seneca": ">=3||>=4.0.0-rc2",
-    "seneca-entity": ">=26",
-    "seneca-promisify": ">=3"
+    "seneca": "^4.0.0",
+    "@seneca/entity": "^29.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@seneca/entity": {
+      "optional": true
+    }
   },
   "dependencies": {
     "async": "^3.2.5"
