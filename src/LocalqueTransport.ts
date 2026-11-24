@@ -2,6 +2,7 @@
 
 
 import Async from 'async'
+import type Seneca from 'seneca'
 
 
 type Options = {
@@ -18,13 +19,26 @@ const defaults: Options = {
 }
 
 
-function LocalqueTransport(this: any, options: Options) {
+function LocalqueTransport(this: Seneca.Instance, options: Options) {
   const seneca: any = this
 
   const queMap: any = {}
   const log = options.debug && (options.log || [])
 
+  // Seneca 4 core provides these helpers; @seneca/transport 9 keeps them
+  // when it replaces the export. seneca-transport 8 and older do not.
   const tu = seneca.export('transport/utils')
+  if (
+    null == tu ||
+    'function' !== typeof tu.internalize_msg ||
+    'function' !== typeof tu.externalize_msg
+  ) {
+    throw new Error(
+      'localque-transport: the transport/utils export has no internalize_msg ' +
+      'and externalize_msg; use Seneca 4, and @seneca/transport 9 or later ' +
+      'instead of seneca-transport'
+    )
+  }
 
   seneca.add('role:transport,hook:listen,type:localque', hook_listen_localque)
   seneca.add('role:transport,hook:client,type:localque', hook_client_localque)

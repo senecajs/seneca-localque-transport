@@ -1,12 +1,18 @@
-/* Copyright © 2022-2024 Seneca Project Contributors, MIT License. */
+/* Copyright © 2022-2026 Seneca Project Contributors, MIT License. */
 
 import Seneca from 'seneca'
-// import SenecaMsgTest from 'seneca-msg-test'
-// import { Maintain } from '@seneca/maintain'
 
 import LocalqueTransportDoc from '../src/LocalqueTransportDoc'
 import LocalqueTransport from '../src/LocalqueTransport'
 
+
+// Run the transport tests on the core transport/utils export, and with
+// @seneca/transport loaded first, which replaces that export.
+const setups: [string, (seneca: any) => any][] = [
+  ['core transport/utils', (seneca: any) => seneca],
+  ['@seneca/transport loaded first',
+    (seneca: any) => seneca.use('@seneca/transport')],
+]
 
 
 describe('localque-transport', () => {
@@ -14,19 +20,37 @@ describe('localque-transport', () => {
     expect(LocalqueTransportDoc).toBeDefined()
     const seneca = Seneca({ legacy: false })
       .test()
-      .use('promisify')
-      .use('entity')
+      .use('@seneca/entity')
       .use(LocalqueTransport)
     await seneca.ready()
+    expect(seneca.find_plugin('LocalqueTransport')).toBeDefined()
+    await seneca.close()
   })
 
 
-  test('basic', async () => {
-    const log = []
+  test('needs the core transport/utils helpers', async () => {
+    const errs: any[] = []
+    const seneca = Seneca({ legacy: false, debug: { undead: true } })
+      .test((err: any) => errs.push(err), 'silent')
 
-    const seneca = await Seneca({ legacy: false })
-      .test()
-      .use('promisify')
+    // Stands in for seneca-transport 8, whose transport/utils export lacks
+    // internalize_msg and externalize_msg.
+    seneca.use(function transport() {
+      return { exportmap: { utils: {} } }
+    })
+    seneca.use(LocalqueTransport)
+    await new Promise((resolve) => seneca.ready(() => resolve(null)))
+
+    expect(errs[0]?.code).toEqual('plugin_define_failed')
+    expect(errs[0]?.message).toMatch(/@seneca\/transport 9/)
+    await seneca.close()
+  })
+
+
+  test.each(setups)('basic (%s)', async (_label, first) => {
+    const log: string[] = []
+
+    const seneca = await first(Seneca({ legacy: false }).test())
       .use(LocalqueTransport)
       .message('a:1', async function a1(this: any, msg: any) {
         log.push('a1x=' + msg.x)
@@ -59,16 +83,16 @@ describe('localque-transport', () => {
       "b1x=1.5",
       "b1x=2.5",
     ])
+
+    await seneca.close()
   })
 
 
-  test('entity', async () => {
-    const log = []
+  test.each(setups)('entity (%s)', async (_label, first) => {
+    const log: string[] = []
 
-    const seneca = await Seneca({ legacy: false })
-      .test()
-      .use('promisify')
-      .use('entity')
+    const seneca = await first(Seneca({ legacy: false }).test())
+      .use('@seneca/entity')
       .use(LocalqueTransport)
       .message('a:1', async function a1(this: any, msg: any) {
         log.push('a1x=' + msg.x + ';f=' + msg.f.data$().y)
@@ -101,6 +125,8 @@ describe('localque-transport', () => {
       "b1x=1.5;f=11",
       "b1x=2.5;f=22",
     ])
+
+    await seneca.close()
   })
 
 })
